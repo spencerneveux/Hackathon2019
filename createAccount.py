@@ -57,3 +57,40 @@ while True:
 
     # Display the resulting frame
     cv2.imshow('Video', frame)
+	
+#---------------------------------------------
+# Now user login
+# Open a video feed 
+login_video_capture = cv2.VideoCapture(0)
+# Display the video to user
+while True:
+    # Collect the success message and frames
+    success, frame = login_video_capture.read()
+
+    # Gray out the frames for comparison
+    gray_image = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+
+    # Detect faces
+    faces = faceCascade.detectMultiScale(
+        gray_image,
+        scaleFactor=1.1,
+        minNeighbors=5,
+        minSize=(30, 30)
+    )
+
+    # Display video
+    for (x, y, w, h) in faces:
+        cv2.rectangle(frame, (x,y), (x+w, y+h), (0,0,0), 2)
+
+    cv2.imshow('Video', frame)
+
+    if cv2.waitKey(1) & 0xFF == ord('c'):
+        cv2.imwrite("Login_frame" + str(face_count) + ".png", frame)
+        break
+
+
+    if cv2.waitKey(1) & 0xFF == ord('q'):
+        break
+
+login_video_capture.release()
+cv2.destroyAllWindows()
