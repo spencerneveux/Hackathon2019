@@ -46,7 +46,7 @@ while True:
     	print("captured image")
     if count == 10:
     	video_capture.release()
-    	cv2,destroyAllWindows()
+    	cv2.destroyAllWindows()
 
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
