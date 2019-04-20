@@ -10,6 +10,13 @@ cascPath = "haarcascade_frontalface_default.xml"
 faceCascade = cv2.CascadeClassifier(cascPath)
 video_capture = cv2.VideoCapture(0)
 face_count = 0
+count = 5
+
+
+while count > 0:
+	print(count)
+	count -= 1
+	sleep(1)
 
 while True:
     if not video_capture.isOpened():
@@ -33,11 +40,13 @@ while True:
 
     if successful__frame_capture and face_count < 10:
     	cv2.imwrite("frame" + str(face_count) + ".png", frame)
-    	sleep(.05) # wait inbetween pics
+    	sleep(.25) # wait inbetween pics
     	#cv2.imshow("frame.png", frame)
     	face_count += 1
-    	
-
+    	print("captured image")
+    if count == 10:
+    	video_capture.release()
+    	cv2,destroyAllWindows()
 
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
@@ -48,7 +57,3 @@ while True:
 
     # Display the resulting frame
     cv2.imshow('Video', frame)
-
-# When everything is done, release the capture
-video_capture.release()
-cv2.destroyAllWindows()
