@@ -232,7 +232,7 @@ def find_user(image_path):
 # Email Stuff
 # -------------------------------------------
 def email():
-    yag = yagmail.SMTP('spencerneveux@gmail.com', 'kvlaiyiycdkncahi')
+    yag = yagmail.SMTP('xxxxxx@gmail.com', 'xxxxxxxxxx')
     # Collect Email address to send to
     recipient = input("To: ")
     # Subject
