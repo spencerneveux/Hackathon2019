@@ -7,10 +7,19 @@ db = mysql.connector.connect(host="35.185.221.29",    # your host, usually local
                      db="test")        # name of the data base
 cur = db.cursor()
 
-def insert_users(table_name, values):
-	sql = "INSERT INTO users (username, password) VALUES (%s, %s)"
-	username, password = values
-	val = (username, password)
+# Drop all tables
+cur.execute("DROP TABLE users")
+cur.execute("DROP TABLE messages")
+cur.execute("DROP TABLE images")
+
+# Create Tables
+cur.execute('CREATE TABLE users (username VARCHAR(50), password VARCHAR(50), image_path VARCHAR(255))')
+
+
+def insert_users(values):
+	sql = "INSERT INTO users (username, password) VALUES (%s, %s, %s)"
+	username, password, image = values
+	val = (username, password, image)
 	cur.execute(sql, val)
 	db.commit()
 
@@ -26,14 +35,19 @@ def query(table_name):
 	result = cur.fetchall()
 	for x in result:
 		print(x)
-# value = ("body", "ian", "spencer")
-# insert_messages(value)
-query("users")
 
-cur.execute("SHOW TABLES") 
-for (table_name,) in cur:
-	print(table_name)
 
+# query("images")
+# cur.execute("SHOW TABLES") 
+# for (table_name,) in cur:
+# 	print(table_name)
+
+
+# cur.execute("ALTER TABLE images ADD COLUMN image VARCHAR(255)")
+# cur.execute("ALTER TABLE images ADD COLUMN id INTEGER")
+# db.commit()
+# cur.execute("CREATE TABLE images (image LONGBLOB)")
+# db.commit()
 # cur.execute("ALTER TABLE messages ADD COLUMN receipient VARCHAR(25)")
 # cur.execute("ALTER TABLE users ADD COLUMN photo LONGBLOB")
 #cur.execute("CREATE TABLE customers (name VARCHAR(255), address VARCHAR(255))")
