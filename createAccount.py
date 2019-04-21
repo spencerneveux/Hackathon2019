@@ -146,10 +146,21 @@ def collect_user_images():
 def login():
     user_name, password = credential_login()
     # Find that matching user in the database
-    image_path = get_image_path(user_name, password)
+    image_path = get_image_path(user_name, password)[0]
+    image_path = image_path[0].strip('(),')
     print(image_path)
     facial_login()
-    find_user(image_path)
+    result = find_user(image_path)
+
+    if result == True:
+        user_choice = message_menu()
+        if user_choice == '1':
+            create_message()
+        elif user_choice == '2':
+            check_inbox()
+
+    else:
+        print("INVALID LOGIN!")
 
 # -------------------------------------------
 # Method to get username/password
@@ -229,57 +240,45 @@ def find_user(image_path):
     return comparison
 
 # -------------------------------------------
-# Email Stuff
+# Main Menu
 # -------------------------------------------
-def email():
-    yag = yagmail.SMTP('xxxxxx@gmail.com', 'xxxxxxxxxx')
-    # Collect Email address to send to
-    recipient = input("To: ")
-    # Subject
-    subject = input("Subject: ")
-    # Body
-    text_body = input("Message: ")
-    # Encrypt message
-    image = encrypt_message(text_body)
-    contents = ["This is a super secret message"]
-    yag.send(recipient, subject, contents, attachments=image)
-    print("SENT!")
+def main_menu():
+    print("Welcome to Chatter")
+    print()
+    print("1. Sign Up")
+    print("2. Login")
+    print("3. Exit\n")
+    user_choice = input("")
+    return user_choice
 
 # -------------------------------------------
-# Steganography Stuff
+# Message Menu
 # -------------------------------------------
-def encrypt_message(user_message):
-    # Take the user message and save it in the image
-    secret_message = lsb.hide("/Users/spencerneveux/Desktop/Hackathon/ChatApp/Images/cat.png", user_message)
-    secret_message.save("/Users/spencerneveux/Desktop/Hackathon/ChatApp/Images/secret_cat.png")
-    return "/Users/spencerneveux/Desktop/Hackathon/ChatApp/Images/secret_cat.png"
-
-def decrypt_message(image_path):
-    decrypted_message = lsb.reveal()
-    print(decrypted_message)
+def message_menu():
+    print("1. Create Message")
+    print("2. View Message")
+    user_choice = input()
+    return user_choice
 
 # -------------------------------------------
-# Database
+# Message method
 # -------------------------------------------
-def create_user(username, password):
-    image_path = 'frame5.png'
-    database.insert({"user_name": username, "password": password, 'image': image_path})
-    print(database.all())
+def create_message():
+    receipient = input("TO: ")
+    message_body = input("Enter your message\n")
+    values = (message_body, receipient, )
+    # insert_messages
+    
 
 # -------------------------------------------
 # MAIN!
 # -------------------------------------------
 def main():
-    # # Collect user input
-    # user_input = input("1.Sign Up\n2.Login\n3.Exit\n")
-    # if user_input == "1":
-    #     sign_up()
-    # elif user_input == "2":
-    #     login()
-    # elif user_input == "3":
-    #     print(database.all())
-    login()
-    show_all_tables()
-    query("users")
+    user_choice = main_menu()
+    if user_choice == '1':
+        sign_up()
+    elif user_choice == '2':
+        login()
+
 
 main()
