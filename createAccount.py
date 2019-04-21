@@ -1,3 +1,4 @@
+import mysql.connector
 import cv2 
 import face_recognition
 import numpy as np
@@ -10,10 +11,58 @@ from stegano import lsb
 import yagmail
 from tinydb import TinyDB, Query
 
+# -------------------------------------------
+# MYSQL DATABASE
+# -------------------------------------------
+db = mysql.connector.connect(host="35.185.221.29",    # your host, usually localhost
+                     user="ian",         # your username
+                     passwd="e",  # your password
+                     db="test")        # name of the data base
+cur = db.cursor()
+
+# Drop all tables
+# cur.execute("DROP TABLE users")
+# cur.execute("DROP TABLE messages")
+
+# Create Tables
+# cur.execute('CREATE TABLE users (username VARCHAR(50), password VARCHAR(50), image_path VARCHAR(255))')
+# cur.execute('CREATE TABLE messages (message_body VARCHAR(255))')
+
+def insert_users(values):
+    sql = "INSERT INTO users (username, password, image_path) VALUES (%s, %s, %s)"
+    username, password, image = values
+    val = (username, password, image)
+    cur.execute(sql, val)
+    db.commit()
+
+def insert_messages(values):
+    sql = "INSERT INTO messages (message_body, receipient, sender) VALUES (%s, %s, %s)"
+    message_body, receipient, sender = values
+    val = (message_body, receipient, sender)
+    cur.execute(sql, val)
+    db.commit()
+
+def query(table_name):
+    cur.execute("SELECT * FROM " + table_name)
+    result = cur.fetchall()
+    for x in result:
+        print(x)
+
+def get_image_path(user_name, password):
+    sql = "SELECT image_path FROM users WHERE username = %s AND password = %s"
+    user = (user_name, password)
+    cur.execute(sql, user)
+    result = cur.fetchall()
+    return result
+
+def show_all_tables():
+    cur.execute("SHOW TABLES") 
+    for (table_name,) in cur:
+        print(table_name)
+
 # Create database
 database = TinyDB("/Users/spencerneveux/Desktop/Hackathon/ChatApp/db.json")
-database.purge()
-database.insert({"username": 'spencer', "password": 'password'})
+# Hard coding a user with their image
 # xml cascade for opencv
 cascPath = "haarcascade_frontalface_default.xml"
 faceCascade = cv2.CascadeClassifier(cascPath)
@@ -25,7 +74,8 @@ video_capture = cv2.VideoCapture(0)
 def sign_up():
     user_name, password = get_username_password()
     collect_user_images()
-    create_user(user_name, password)
+    values = (user_name, password, "/Users/spencerneveux/Desktop/Hackathon/ChatApp/frame8.png")
+    insert_users(values)
 
 # -------------------------------------------
 # Method to sign up a user with specific
@@ -82,7 +132,9 @@ def collect_user_images():
             cv2.rectangle(frame, (x, y), (x+w, y+h), (0, 0, 0), 2)
 
         # Display the resulting frame
-        cv2.imshow('Video', frame)
+        cv2.namedWindow("output")
+        cv2.moveWindow("output", 100,100)
+        cv2.imshow('output', frame)
 
     # When everything is done, release the capture
     video_capture.release()
@@ -94,22 +146,17 @@ def collect_user_images():
 def login():
     user_name, password = credential_login()
     # Find that matching user in the database
-    User = Query()
-
-    # Search for that user
-    user = database.search(User.user_name==user_name & User.password==password)
-    # Get the image from that user
-    image = user['image']
-    print(image)
+    image_path = get_image_path(user_name, password)
+    print(image_path)
     facial_login()
-    find_user()
+    find_user(image_path)
 
 # -------------------------------------------
 # Method to get username/password
 # -------------------------------------------
 def credential_login():
     user_name = input("Enter username\n")
-    password = input("Enter pasword\n")
+    password = input("Enter password\n")
     return user_name, password
 
 # -------------------------------------------
@@ -158,9 +205,9 @@ def facial_login():
 # If user is indeed who they are logging in as
 # Take them to message stage
 # -------------------------------------------
-def find_user():
+def find_user(image_path):
     # Get an image from the database for that user
-    known_user_image = face_recognition.load_image_file("frame8.png")
+    known_user_image = face_recognition.load_image_file(image_path)
 
     # Get the image from the attempted login
     unknown_pic = face_recognition.load_image_file("Login_frame.png")
@@ -175,8 +222,10 @@ def find_user():
     # Print out the results
     if comparison[0] == True:
         print("Successful Login")
+        return True
     else:
         print("THAT'S NOT YOU!")
+        return False
     return comparison
 
 # -------------------------------------------
@@ -214,7 +263,7 @@ def decrypt_message(image_path):
 # -------------------------------------------
 def create_user(username, password):
     image_path = 'frame5.png'
-    database.insert({'username': username, 'password': password, 'image': image_path})
+    database.insert({"user_name": username, "password": password, 'image': image_path})
     print(database.all())
 
 # -------------------------------------------
@@ -227,12 +276,10 @@ def main():
     #     sign_up()
     # elif user_input == "2":
     #     login()
-    #     comparison_result = find_user()
-    #     if comparison_result[0] == True:
-    #         email()
     # elif user_input == "3":
-    #     break
-    User = Query()
-    user = database.search(User.username=='spencer')
-    print(user[0]['password'])
+    #     print(database.all())
+    login()
+    show_all_tables()
+    query("users")
+
 main()
