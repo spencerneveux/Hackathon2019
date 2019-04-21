@@ -20,13 +20,14 @@ db = mysql.connector.connect(host="35.185.221.29",    # your host, usually local
                      db="test")        # name of the data base
 cur = db.cursor()
 
-# Drop all tables
+# # Drop all tables
 # cur.execute("DROP TABLE users")
 # cur.execute("DROP TABLE messages")
+# # cur.execute("DROP TABLE pics")
 
 # Create Tables
 # cur.execute('CREATE TABLE users (username VARCHAR(50), password VARCHAR(50), image_path VARCHAR(255))')
-# cur.execute('CREATE TABLE messages (message_body VARCHAR(255))')
+# cur.execute('CREATE TABLE messages (message_body VARCHAR(255), person VARCHAR(50))')
 
 def insert_users(values):
     sql = "INSERT INTO users (username, password, image_path) VALUES (%s, %s, %s)"
@@ -36,14 +37,21 @@ def insert_users(values):
     db.commit()
 
 def insert_messages(values):
-    sql = "INSERT INTO messages (message_body, receipient, sender) VALUES (%s, %s, %s)"
-    message_body, receipient, sender = values
-    val = (message_body, receipient, sender)
+    sql = "INSERT INTO messages (message_body, person) VALUES (%s, %s)"
+    message_body, person = values
+    val = (message_body, person)
     cur.execute(sql, val)
     db.commit()
 
 def query(table_name):
     cur.execute("SELECT * FROM " + table_name)
+    result = cur.fetchall()
+    for x in result:
+        print(x)
+
+def query_inbox(username):
+
+    cur.execute("SELECT message_body FROM messages WHERE person = '" + username + "'")
     result = cur.fetchall()
     for x in result:
         print(x)
@@ -60,8 +68,6 @@ def show_all_tables():
     for (table_name,) in cur:
         print(table_name)
 
-# Create database
-database = TinyDB("/Users/spencerneveux/Desktop/Hackathon/ChatApp/db.json")
 # Hard coding a user with their image
 # xml cascade for opencv
 cascPath = "haarcascade_frontalface_default.xml"
@@ -76,6 +82,7 @@ def sign_up():
     collect_user_images()
     values = (user_name, password, "/Users/spencerneveux/Desktop/Hackathon/ChatApp/frame8.png")
     insert_users(values)
+    main()
 
 # -------------------------------------------
 # Method to sign up a user with specific
@@ -157,7 +164,7 @@ def login():
         if user_choice == '1':
             create_message()
         elif user_choice == '2':
-            check_inbox()
+            check_inbox(user_name)
 
     else:
         print("INVALID LOGIN!")
@@ -266,19 +273,29 @@ def message_menu():
 def create_message():
     receipient = input("TO: ")
     message_body = input("Enter your message\n")
-    values = (message_body, receipient, )
-    # insert_messages
+    values = (message_body, receipient)
+    insert_messages(values)
     
+# -------------------------------------------
+# Check inbox method
+# -------------------------------------------
+def check_inbox(username):
+    # Find the messages associated my with username
+    query_inbox(username)
+
 
 # -------------------------------------------
 # MAIN!
 # -------------------------------------------
 def main():
-    user_choice = main_menu()
-    if user_choice == '1':
-        sign_up()
-    elif user_choice == '2':
-        login()
+    # user_choice = main_menu()
+    # if user_choice == '1':
+    #     sign_up()
+    # elif user_choice == '2':
+    #     login()
+    # query('users')
+    username = "ian"
+    query_inbox(username)
 
-
+    # query('messages')
 main()
