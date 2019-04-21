@@ -94,3 +94,53 @@ while True:
 
 login_video_capture.release()
 cv2.destroyAllWindows()
+
+# ---------------------------------
+def get_training_images():
+    # Create array of images to train the AI
+    img_array =  []
+    # Run through the images and collect them 
+    for i in range(10):
+        # Get the image path
+        image_path = "/Users/spencerneveux/Desktop/Hackathon/ChatApp/frame" + str(i) + ".png"
+        # Create an image object that is grey
+        image = cv2.imread(image_path)
+        gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        # Send to faceial recognizer method 
+        # cropped_image = get_face(gray_image)
+        # Add this to the array
+        img_array.append(gray_image)
+
+    # This just runs through the array and gets the first image to display it (testing essentially)
+    while True:
+        image = img_array[0]
+
+        dimensions = get_face(image)
+        x = dimensions[0]
+        y = dimensions[1]
+        w = dimensions[2]
+        h = dimensions[3]
+        cropped = image[y:y+h, x:x+w]
+        # cropped = get_face(image)
+        cv2.imshow('image', cropped)
+
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
+    login_video_capture.release()
+    cv2.destroyAllWindows()
+# ---------------------------------
+
+def get_face(image):
+
+    faces = faceCascade.detectMultiScale(
+        image,
+        scaleFactor=1.1,
+        minNeighbors=5,
+        minSize=(30, 30)
+    )
+    for (x,y,w,h) in faces:
+        cv2.rectangle(image,(x,y),(x+w,y+h),(255,0,0),2)
+        roi_gray = image[y:y+h, x:x+w]
+        roi_color = image[y:y+h, x:x+w]
+
+    return (x, y, w, h)
